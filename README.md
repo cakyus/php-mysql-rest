@@ -15,5 +15,8 @@ A single PHP file that adds REST API to a MySQL database
 
 ### Utility
 
- 1. Delete cache `DELETE /api/v1/_db/cache`
- 
+#### Cache
+
+ 1. Show cache `GET /api/v1/_db/cache`
+ 2. Create cache `POST /api/v1/_db/cache`
+ 2. Delete cache `DELETE /api/v1/_db/cache`
