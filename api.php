@@ -18,8 +18,23 @@ $REQUEST_METHOD  = $_SERVER['REQUEST_METHOD'];
 $PATH_INFO       = $_SERVER['PATH_INFO'];
 $BASE_PATH       = '';
 
-$QUERY_LIMIT_OFFSET = 0;
-$QUERY_LIMIT_SIZE   = 10;
+$QUERY_LIMIT_OFFSET   = 0;
+$QUERY_LIMIT_SIZE     = 10;
+$QUERY_LIMIT_SIZE_MAX = 1000;
+
+// -- Auto configuration -----------------------------------------------
+
+if ($REQUEST_METHOD == 'GET'){
+	if (isset($_GET['offset']) == TRUE && ctype_digit($_GET['offset']) == TRUE){
+		$QUERY_LIMIT_OFFSET = $_GET['offset'];
+	}
+	if (isset($_GET['limit']) == TRUE && ctype_digit($_GET['limit']) == TRUE){
+		if ($QUERY_LIMIT_SIZE_MAX > $_GET['limit'] - 1){
+			$QUERY_LIMIT_SIZE = $_GET['limit'];
+		}
+	}
+}
+
 
 // -- Read cache -------------------------------------------------------
 
