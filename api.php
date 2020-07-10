@@ -234,6 +234,43 @@ if ($REQUEST_METHOD == 'GET'){
 			echo json_encode($response);
 			exit();
 		}
+
+		$sql = "SELECT `".implode("`, `", $cacheData['objectColumnNames'][$objectName])."`"
+			." FROM `$objectName`"
+			." LIMIT $QUERY_LIMIT_OFFSET, $QUERY_LIMIT_SIZE"
+			;
+
+		if ($result = mysqli_query($link, $sql)){
+
+			$rows = array();
+			while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)){
+				$rows[] = $row;
+			}
+
+			mysqli_free_result($result);
+			mysqli_close($link);
+
+			$response = new \stdClass;
+			$response->result = $rows;
+			header('Content-Type: application/json');
+			echo json_encode($response);
+			exit();
+		} else {
+
+			$response = new \stdClass;
+			$response->code = mysqli_errno($link);
+			$response->message = mysqli_error($link);
+
+			mysqli_close($link);
+
+			header($SERVER_PROTOCOL.' 500 Internal Server Error', TRUE, 500);
+			header('Content-Type: application/json');
+			echo json_encode($response);
+			exit();
+		}
+	} elseif (preg_match("/^\/[^\/]\//", $PATH_INFO, $match) == TRUE){
+		// Handle GET /table-name/{id}
+	}
 		$sql = "SELECT `".implode("`, `", $cacheData['objectColumnNames'][$objectName])."`"
 			." FROM `$objectName`"
 			." LIMIT $QUERY_LIMIT_OFFSET, $QUERY_LIMIT_SIZE"
