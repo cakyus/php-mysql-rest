@@ -221,7 +221,7 @@ if ($REQUEST_METHOD == 'GET'){
 		// Handle GET /table-name
 		$objectName = $match[1];
 
-		if (isset($cacheData['objectNames'][$objectName]) == FALSE){
+		if (in_array($objectName, $cacheData['objectNames']) == FALSE){
 
 			$response = new \stdClass;
 			$response->code = '404';
