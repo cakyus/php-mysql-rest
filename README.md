@@ -24,7 +24,7 @@ The `offset` clause specifies offset of the first row to return.
 
 ##### Filter
 
-`GET /api/v1/table-name?filter[field-name][operator][]=field-value`
+`GET /api/v1/table-name?filter[column-name][operator][]=column-value`
 
 Operators:
 
