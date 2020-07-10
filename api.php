@@ -217,8 +217,23 @@ if (	is_null($cacheData['creationDate']) == TRUE
 if ($REQUEST_METHOD == 'GET'){
 
 	if (preg_match("/^\/([^\/]+)/", $PATH_INFO, $match) == TRUE){
+
 		// Handle GET /table-name
 		$objectName = $match[1];
+
+		if (isset($cacheData['objectNames'][$objectName]) == FALSE){
+
+			$response = new \stdClass;
+			$response->code = '404';
+			$response->message = 'Object not found';
+
+			mysqli_close($link);
+
+			header($SERVER_PROTOCOL.' 404 Not Found', TRUE, 404);
+			header('Content-Type: application/json');
+			echo json_encode($response);
+			exit();
+		}
 		$sql = "SELECT `".implode("`, `", $cacheData['objectColumnNames'][$objectName])."`"
 			." FROM `$objectName`"
 			." LIMIT $QUERY_LIMIT_OFFSET, $QUERY_LIMIT_SIZE"
