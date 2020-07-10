@@ -35,7 +35,6 @@ if ($REQUEST_METHOD == 'GET'){
 	}
 }
 
-
 // -- Read cache -------------------------------------------------------
 
 clearstatcache();
@@ -216,9 +215,10 @@ if (	is_null($cacheData['creationDate']) == TRUE
 
 if ($REQUEST_METHOD == 'GET'){
 
+	// Handle GET /table-name
+
 	if (preg_match("/^\/([^\/]+)/", $PATH_INFO, $match) == TRUE){
 
-		// Handle GET /table-name
 		$objectName = $match[1];
 
 		if (in_array($objectName, $cacheData['objectNames']) == FALSE){
@@ -255,6 +255,7 @@ if ($REQUEST_METHOD == 'GET'){
 			header('Content-Type: application/json');
 			echo json_encode($response);
 			exit();
+
 		} else {
 
 			$response = new \stdClass;
@@ -267,29 +268,70 @@ if ($REQUEST_METHOD == 'GET'){
 			header('Content-Type: application/json');
 			echo json_encode($response);
 			exit();
+
 		}
-	} elseif (preg_match("/^\/[^\/]\//", $PATH_INFO, $match) == TRUE){
-		// Handle GET /table-name/{id}
 	}
-		$sql = "SELECT `".implode("`, `", $cacheData['objectColumnNames'][$objectName])."`"
-			." FROM `$objectName`"
-			." LIMIT $QUERY_LIMIT_OFFSET, $QUERY_LIMIT_SIZE"
-			;
-		if ($result = mysqli_query($link, $sql)){
 
-			$rows = array();
-			while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)){
-				$rows[] = $row;
-			}
+	// Handle GET /table-name/{id}
 
-			mysqli_free_result($result);
-			mysqli_close($link);
+	if (preg_match("/^\/[^\/]\//", $PATH_INFO, $match) == TRUE){
+
+	}
+
+} elseif ($REQUEST_METHOD == 'DELETE'){
+
+	if (preg_match("/^\/([^\/]+)\/([^\/]+)/", $PATH_INFO, $match) == TRUE){
+
+		// Handle DELETE /table-name/{id}
+
+		$objectName = $match[1];
+		$objectId = $match[2];
+
+		// Check objectNames
+
+		if (in_array($objectName, $cacheData['objectNames']) == FALSE){
 
 			$response = new \stdClass;
-			$response->result = $rows;
+			$response->code = '404';
+			$response->message = 'Object not found';
+
+			mysqli_close($link);
+
+			header($SERVER_PROTOCOL.' 404 Not Found', TRUE, 404);
 			header('Content-Type: application/json');
 			echo json_encode($response);
 			exit();
+		}
+
+		// Check objectPrimaryKeys
+
+		if (isset($cacheData['objectPrimaryKeys'][$objectName]) == FALSE){
+
+			$response = new \stdClass;
+			$response->code = '500';
+			$response->message = 'Object does not have a primary key';
+
+			mysqli_close($link);
+
+			header($SERVER_PROTOCOL.' 500 Internal Server Error', TRUE, 500);
+			header('Content-Type: application/json');
+			echo json_encode($response);
+			exit();
+		}
+
+		// TODO Check objectColumnTypes
+
+		$sql = "DELETE FROM `$objectName`"
+			." WHERE `".$cacheData['objectPrimaryKeys'][$objectName]."`"
+				." = '".mysqli_real_escape_string($link, $objectId)."'"
+			;
+
+		if ($result = mysqli_query($link, $sql)){
+
+			mysqli_close($link);
+			header($SERVER_PROTOCOL.' 204 No Content', TRUE, 200);
+			exit();
+
 		} else {
 
 			$response = new \stdClass;
@@ -302,9 +344,8 @@ if ($REQUEST_METHOD == 'GET'){
 			header('Content-Type: application/json');
 			echo json_encode($response);
 			exit();
+
 		}
-	} elseif (preg_match("/^\/[^\/]\//", $PATH_INFO, $match) == TRUE){
-		// Handle GET /table-name/{id}
 	}
 }
 
