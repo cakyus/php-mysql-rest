@@ -336,7 +336,7 @@ if ($REQUEST_METHOD == 'GET'){
 
 			$response = new \stdClass;
 			$response->code = mysqli_errno($link);
-			$response->message = mysqli_error($link).' '.$sql;
+			$response->message = mysqli_error($link);
 
 			mysqli_close($link);
 
