@@ -542,6 +542,126 @@ if ($REQUEST_METHOD == 'GET'){
 		}
 	}
 
+} elseif ($REQUEST_METHOD == 'PUT'){
+
+	// Read request
+
+	$request = new \Api_Request;
+	if ($request->count() == 0){
+		$response = new \Api_Response_Error;
+		$response->code = -32000;
+		$response->message = 'Updating record must have at least one field to be updated';
+		$response->write();
+	}
+
+	// Handle PUT /table-name/{id}
+
+	if (preg_match("/^\/([^\/]+)\/([^\/]+)$/", $PATH_INFO, $match) == TRUE){
+
+		$objectName = $match[1];
+		$objectKeyValue = $match[2];
+
+		if (in_array($objectName, $cacheData['objectNames']) == FALSE){
+
+			mysqli_close($link);
+
+			$response = new \stdClass;
+			$response->code = '404';
+			$response->message = 'Object not found';
+
+			header($SERVER_PROTOCOL.' 404 Not Found', TRUE, 404);
+			header('Content-Type: application/json');
+			echo json_encode($response);
+			exit();
+		}
+
+		if (isset($cacheData['objectPrimaryKeys'][$objectName]) == FALSE){
+
+			mysqli_close($link);
+
+			$response = new \stdClass;
+			$response->code = '404';
+			$response->message = 'Key not found';
+
+			header($SERVER_PROTOCOL.' 404 Not Found', TRUE, 404);
+			header('Content-Type: application/json');
+			echo json_encode($response);
+			exit();
+		}
+
+		$objectKeyName = $cacheData['objectPrimaryKeys'][$objectName];
+		$objectKeyType = $cacheData['objectColumnTypes'][$objectName][$objectKeyName];
+
+		$sqlUpdateColumns = array();
+		foreach ($request->getNames() as $columnName){
+
+			$sqlUpdateColumn = "`$columnName` = ";
+			if (in_array($columnName, $cacheData['objectColumnNames'][$objectName]) == FALSE){
+
+				mysqli_close($link);
+
+				$response = new \Api_Response_Error;
+				$response->code = -32000;
+				$response->message = 'Column not found';
+				$response->data = "Column not found '$columnName' in object '$objectName'";
+				$response->write();
+			}
+
+			$columnType = $cacheData['objectColumnTypes'][$objectName][$columnName];
+			$columnValue = $request->getValue($columnName);
+
+			if ($columnType == 'integer'){
+				$sqlUpdateColumn .= $columnValue;
+			} elseif ($columnType == 'datetime'){
+				$sqlUpdateColumn .= "'$columnValue'";
+			} elseif ($columnType == 'character'){
+				$sqlUpdateColumn .= "'".mysqli_real_escape_string($link, $columnValue)."'";
+			}
+
+			$sqlUpdateColumns[] = $sqlUpdateColumn;
+		}
+
+		$sql  = "UPDATE `$objectName` SET ".implode(', ', $sqlUpdateColumns);
+		$sql .= " WHERE `".$cacheData['objectPrimaryKeys'][$objectName]."` = ";
+
+		if ($objectKeyType == 'integer'){
+			$sql .= $objectKeyValue;
+		} elseif ($objectKeyType == 'datetime'){
+			$sql .= "'$objectKeyValue'";
+		} elseif ($objectKeyType == 'character'){
+			$sql .= "'".mysqli_real_escape_string($link, $objectKeyValue)."'";
+		}
+
+		$sql .= " LIMIT 1";
+
+		if ($result = mysqli_query($link, $sql)){
+
+			mysqli_close($link);
+
+			$object = new \stdClass;
+			$response = new \stdClass;
+			$response->result = $object;
+			header($SERVER_PROTOCOL.' 200 OK', TRUE, 200);
+			header('Content-Type: application/json');
+			echo json_encode($response);
+			exit();
+
+		} else {
+
+			$response = new \stdClass;
+			$response->code = mysqli_errno($link);
+			$response->message = mysqli_error($link);
+
+			mysqli_close($link);
+
+			header($SERVER_PROTOCOL.' 500 Internal Server Error', TRUE, 500);
+			header('Content-Type: application/json');
+			echo json_encode($response);
+			exit();
+
+		}
+	}
+
 } elseif ($REQUEST_METHOD == 'DELETE'){
 
 	if (preg_match("/^\/([^\/]+)\/([^\/]+)/", $PATH_INFO, $match) == TRUE){
