@@ -173,8 +173,63 @@ if (	is_null($cacheData['creationDate']) == TRUE
 			$cacheData['objectColumnNames'][$objectName] = array();
 			$cacheData['objectColumnTypes'][$objectName] = array();
 			while ($row = mysqli_fetch_array($result,  MYSQLI_ASSOC)){
+
 				$cacheData['objectColumnNames'][$objectName][] = $row['Field'];
-				$cacheData['objectColumnTypes'][$objectName][$row['Field']] = $row['Type'];
+
+				// Map Column Types
+				//   - integer  : no escape string nor single quote
+				//   - datetime : no escape string and single quote
+				//   - character : escape string and single quote
+
+				if (	substr($row['Type'], 0, 3) == 'int'
+					||	substr($row['Type'], 0, 7) == 'tinyint'
+					||	substr($row['Type'], 0, 8) == 'smallint'
+					||	substr($row['Type'], 0, 9) == 'mediumint'
+					||	substr($row['Type'], 0, 6) == 'bigint'
+					||	$row['Type'] == 'float'
+					||	substr($row['Type'], 0, 6) == 'double'
+					||	substr($row['Type'], 0, 7) == 'decimal'
+					) {
+					$cacheData['objectColumnTypes'][$objectName][$row['Field']] = 'integer';
+				} elseif (
+							substr($row['Type'], 0, 4) == 'char'
+					||	substr($row['Type'], 0, 7) == 'varchar'
+					||	$row['Type'] == 'tinytext'
+					||	$row['Type'] == 'text'
+					||	$row['Type'] == 'mediumtext'
+					||	$row['Type'] == 'longtext'
+					){
+					$cacheData['objectColumnTypes'][$objectName][$row['Field']] = 'character';
+				} elseif (
+							$row['Type'] == 'date'
+					||	$row['Type'] == 'datetime'
+					||	$row['Type'] == 'timestamp'
+					||	$row['Type'] == 'time'
+					){
+					$cacheData['objectColumnTypes'][$objectName][$row['Field']] = 'datetime';
+				} elseif (
+							substr($row['Type'], 0, 6) == "enum('"
+					||	substr($row['Type'], 0, 5) == "set('"
+					){
+					$cacheData['objectColumnTypes'][$objectName][$row['Field']] = 'character';
+				} elseif (
+							substr($row['Type'], 0, 5) == "enum("
+					||	substr($row['Type'], 0, 4) == "set("
+					){
+					$cacheData['objectColumnTypes'][$objectName][$row['Field']] = 'integer';
+				} else {
+
+					mysqli_close($link);
+
+					$response = new \stdClass;
+					$response->code = 400;
+					$response->message = 'Unsupported Type '.$row['Type'];
+					header($SERVER_PROTOCOL.' 400 Bad Request', TRUE, 400);
+					header('Content-Type: application/json');
+					echo json_encode($response);
+					exit();
+				}
+
 				if ($row['Key'] == 'PRI'){
 					$cacheData['objectPrimaryKeys'][$objectName] = $row['Field'];
 				}
