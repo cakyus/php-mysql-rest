@@ -103,6 +103,127 @@ if ($REQUEST_METHOD == 'GET' && $PATH_INFO == '/_db/cache'){
 	exit();
 }
 
+class Api_Request {
+
+	public $_attributes;
+
+	public function __construct() {
+
+		$requestText = file_get_contents('php://input');
+
+		if ($requestText === FALSE){
+
+			$response = new \Api_Response_Error;
+			$response->code = -32700;
+			$response->message = 'Parse error';
+			$response->write();
+		}
+
+		$requestData = json_decode($requestText);
+		if (	is_null($requestData) == TRUE
+			&&	json_last_error() != JSON_ERROR_NONE
+			){
+
+			$response = new \Api_Response_Error;
+			$response->code = -32700;
+			$response->message = 'Parse error';
+			$response->data = json_last_error_msg();
+			$response->write();
+		}
+
+		if (is_object($requestData) == FALSE){
+
+			$response = new \Api_Response_Error;
+			$response->code = -32600;
+			$response->message = 'Invalid Request';
+			$response->write();
+		}
+
+		$this->_attributes = array();
+
+		foreach ($requestData as $attributeName => $attributeValue){
+			$this->_attributes[$attributeName] = $attributeValue;
+		}
+	}
+
+	public function __get($attributeName) {
+		if (array_key_exists($attributeName, $this->_attributes)){
+			return $this->_attributes[$attributeName];
+		}
+		return NULL;
+	}
+
+	public function count() {
+		return count($this->_attributes);
+	}
+
+	public function getNames() {
+		return array_keys($this->_attributes);
+	}
+
+	public function getValue($attributeName) {
+		if (array_key_exists($attributeName, $this->_attributes)){
+			return $this->_attributes[$attributeName];
+		}
+		return NULL;
+	}
+}
+
+class Api_Response_Success {
+
+	public $id;
+	public $result;
+
+	public function write() {
+
+		if (is_null($this->result) == TRUE){
+			$result = new \stdClass;
+		} else {
+			$result = $this->result;
+		}
+
+		$response = new \stdClass;
+
+		$response->jsonrpc = '2.0';
+		$response->result = $result;
+		$response->id = $this->id;
+
+		header($SERVER_PROTOCOL.' 200 OK', TRUE, 200);
+		header('Content-Type: application/json');
+		echo json_encode($response);
+		exit();
+	}
+}
+
+class Api_Response_Error {
+
+	public $id;
+	public $code;
+	public $message;
+	public $data;
+
+	public function write() {
+
+		$response = new \stdClass;
+		$error = new \stdClass;
+
+		$error->code = $this->code;
+		$error->message = $this->message;
+		if (is_null($this->data) == FALSE){
+			$error->data = $this->data;
+		}
+
+		$response->jsonrpc = '2.0';
+		$response->error = $error;
+		$response->id = $this->id;
+
+		header($SERVER_PROTOCOL.' 200 OK', TRUE, 200);
+		header('Content-Type: application/json');
+		echo json_encode($response);
+		exit();
+	}
+}
+
 // -- Connect to database ----------------------------------------------
 
 $link = mysqli_connect($MYSQL_HOSTNAME, $MYSQL_USERNAME, $MYSQL_PASSWORD, $MYSQL_DATABASE);
