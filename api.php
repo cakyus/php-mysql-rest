@@ -272,7 +272,7 @@ if ($REQUEST_METHOD == 'GET'){
 
 	// Handle GET /table-name
 
-	if (preg_match("/^\/([^\/]+)/", $PATH_INFO, $match) == TRUE){
+	if (preg_match("/^\/([^\/]+)$/", $PATH_INFO, $match) == TRUE){
 
 		$objectName = $match[1];
 
@@ -329,8 +329,96 @@ if ($REQUEST_METHOD == 'GET'){
 
 	// Handle GET /table-name/{id}
 
-	if (preg_match("/^\/[^\/]\//", $PATH_INFO, $match) == TRUE){
+	if (preg_match("/^\/([^\/]+)\/([^\/]+)$/", $PATH_INFO, $match) == TRUE){
 
+		$objectName = $match[1];
+		$objectKeyValue = $match[2];
+
+		if (in_array($objectName, $cacheData['objectNames']) == FALSE){
+
+			mysqli_close($link);
+
+			$response = new \stdClass;
+			$response->code = '404';
+			$response->message = 'Object not found';
+
+			header($SERVER_PROTOCOL.' 404 Not Found', TRUE, 404);
+			header('Content-Type: application/json');
+			echo json_encode($response);
+			exit();
+		}
+
+		if (isset($cacheData['objectPrimaryKeys'][$objectName]) == FALSE){
+
+			mysqli_close($link);
+
+			$response = new \stdClass;
+			$response->code = '404';
+			$response->message = 'Key not found';
+
+			header($SERVER_PROTOCOL.' 404 Not Found', TRUE, 404);
+			header('Content-Type: application/json');
+			echo json_encode($response);
+			exit();
+		}
+
+		$objectKeyName = $cacheData['objectPrimaryKeys'][$objectName];
+		$objectKeyType = $cacheData['objectColumnTypes'][$objectName][$objectKeyName];
+
+		$sql = "SELECT `".implode("`, `", $cacheData['objectColumnNames'][$objectName])."`"
+			." FROM `$objectName`"
+			." WHERE `".$cacheData['objectPrimaryKeys'][$objectName]."` = "
+			;
+
+		if ($objectKeyType == 'integer'){
+			$sql .= $objectKeyValue;
+		} elseif ($objectKeyType == 'datetime'){
+			$sql .= "'$objectKeyValue'";
+		} elseif ($objectKeyType == 'character'){
+			$sql .= "'".mysqli_real_escape_string($objectKeyValue, $link)."'";
+		}
+
+		if ($result = mysqli_query($link, $sql)){
+
+			$rows = array();
+			if ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)){
+
+				mysqli_free_result($result);
+				mysqli_close($link);
+
+				$response = new \stdClass;
+				$response->result = $row;
+				header('Content-Type: application/json');
+				echo json_encode($response);
+				exit();
+			}
+
+			mysqli_free_result($result);
+			mysqli_close($link);
+
+			$response = new \stdClass;
+			$response->code = 404;
+			$response->message = 'Record not found';
+
+			header($SERVER_PROTOCOL.' 404 Not Found', TRUE, 404);
+			header('Content-Type: application/json');
+			echo json_encode($response);
+			exit();
+
+		} else {
+
+			$response = new \stdClass;
+			$response->code = mysqli_errno($link);
+			$response->message = mysqli_error($link);
+
+			mysqli_close($link);
+
+			header($SERVER_PROTOCOL.' 500 Internal Server Error', TRUE, 500);
+			header('Content-Type: application/json');
+			echo json_encode($response);
+			exit();
+
+		}
 	}
 
 } elseif ($REQUEST_METHOD == 'DELETE'){
