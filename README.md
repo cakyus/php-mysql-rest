@@ -47,4 +47,4 @@ Operators:
 
  1. Fetch cache `GET /api/v1/_db/cache`
  2. Create cache `POST /api/v1/_db/cache`
- 2. Delete cache `DELETE /api/v1/_db/cache`
+
