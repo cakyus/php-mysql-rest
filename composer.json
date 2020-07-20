@@ -1,12 +1,12 @@
 {
-    "name": "pdr/mysql-rest",
-    "description": "PHP MySQL REST API",
-    "type": "library",
-    "license": "GPL-2.0-only",
-    "minimum-stability": "dev",
-		"autoload": {
-			"psr-4": {
-				"Pdr\\Mysql\\Rest\\": "src/"
-			}
-		}
+  "name": "pdr/mysql-rest",
+  "description": "PHP MySQL REST API",
+  "type": "library",
+  "license": "GPL-2.0-only",
+  "minimum-stability": "dev",
+  "autoload": {
+    "psr-4": {
+      "Pdr\\Mysql\\Rest\\": "src/"
+    }
+  }
 }
