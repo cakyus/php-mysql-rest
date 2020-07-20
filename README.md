@@ -8,23 +8,23 @@ A single PHP file that adds REST API to a MySQL database
 
 ### Records
 
- 1. Fetch records `GET /api/v1/table-name`
- 2. Create record `POST /api/v1/table-name`
- 3. Update record `PUT /api/v1/table-name/{id}`
- 4. Delete record `DELETE /api/v1/table-name/{id}`
+ 1. Fetch records `GET /api/v1/table`
+ 2. Create record `POST /api/v1/table`
+ 3. Update record `PUT /api/v1/table/{id}`
+ 4. Delete record `DELETE /api/v1/table/{id}`
 
 #### Fetch Records
 
 ##### Pagination
 
-`GET /api/v1/table-name?offset=0&limit=10`
+`GET /api/v1/table?offset=0&limit=10`
 
 The `limit` clause constrain the number of rows returned.
 The `offset` clause specifies offset of the first row to return.
 
 ##### Filter
 
-`GET /api/v1/table-name?filter[column-name][operator][]=column-value`
+`GET /api/v1/table?filter[column-name][operator][]=column-value`
 
 Operators:
 
@@ -45,6 +45,6 @@ Operators:
 
 ### Cache
 
- 1. Fetch cache `GET /api/v1/_db/cache`
- 2. Create cache `POST /api/v1/_db/cache`
+ 1. Fetch cache `GET /api/v1/_db/schema`
+ 2. Create cache `POST /api/v1/_db/schema`
 
