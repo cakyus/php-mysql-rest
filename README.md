@@ -8,10 +8,12 @@ A single PHP file that adds REST API to a MySQL database
 
 ### Records
 
- 1. Fetch records `GET /api/v1/table`
- 2. Create record `POST /api/v1/table`
- 3. Update record `PUT /api/v1/table/{id}`
- 4. Delete record `DELETE /api/v1/table/{id}`
+| HTTP Method | Example | Description |
+|----|----|----|
+| `GET` | `/api/v1/table` | Fetch Records |
+| `POST` | `/api/v1/table` | Create Record |
+| `PUT` | `/api/v1/table/{id}` | Update Record |
+| `DELETE` | `/api/v1/table/{id}` | Delete Record |
 
 #### Fetch Records
 
