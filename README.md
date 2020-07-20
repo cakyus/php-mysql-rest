@@ -21,8 +21,12 @@ A single PHP file that adds REST API to a MySQL database
 
 `GET /api/v1/table?offset=0&limit=10`
 
-The `limit` clause constrain the number of rows returned.
-The `offset` clause specifies offset of the first row to return.
+###### Arguments
+
+| Name | Type | Required | Description |
+|----|----|----|----|
+| limit | integer | NO | Constrain the number of rows returned |
+| offset | integer | NO | Specifies offset of the first row to return |
 
 ##### Filter
 
