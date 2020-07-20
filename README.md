@@ -32,25 +32,31 @@ A single PHP file that adds REST API to a MySQL database
 
 `GET /api/v1/table?filter[column-name][operator][]=column-value`
 
-Operators:
+###### Oprerators
 
- 1. `equal` is equal to
- 2. `notEqual` is not equal to
- 3. `greaterThan` is greater than
- 4. `greaterThanOrEqual` is greater than or equal to
- 5. `lessThan` is less than
- 6. `lessThanOrEqual` is less than or equal to
- 7. `beginWith` is less than or equal to
- 8. `endWith` is less than or equal to
- 9. `between` is less than or equal to
- 10. `contain` is less than or equal to
- 11. `notContain` is less than or equal to
- 12. `isNotNull` is less than or equal to
- 13. `isNull` is less than or equal to
- 14. `in` is less than or equal to
+| Name | Description |
+|----|----|
+| `equal` | is equal to |
+| `notEqual` | is not equal to |
+| `greaterThan` | is greater than |
+| `greaterThanOrEqual` | is greater than or equal to |
+| `lessThan` | is less than |
+| `lessThanOrEqual` | is less than or equal to |
+| `beginWith` | is less than or equal to |
+| `endWith` | is less than or equal to |
+| `between` | is less than or equal to |
+| `contain` | is less than or equal to |
+| `notContain` | is less than or equal to |
+| `isNotNull` | is less than or equal to |
+| `isNull` | is less than or equal to |
+| `in` | is less than or equal to |
 
 ### Cache
 
  1. Fetch cache `GET /api/v1/_db/schema`
  2. Create cache `POST /api/v1/_db/schema`
 
+| HTTP Method | Example | Description |
+|----|----|----|
+| `GET` | `/api/v1/_db/schema` | Fetch schema cache |
+| `POST` | `/api/v1/_db/schema` | Create shcema cache |
